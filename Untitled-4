@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ITT1878 · Check-list de seguridad en campo</title>
+
+  <!-- EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f4f6f8;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --border:#d1d5db;
+      --primary:#111827;
+      --accent:#2563eb;
+      --ok:#166534;
+      --warn:#b45309;
+      --danger:#b91c1c;
+      --shadow:0 8px 24px rgba(0,0,0,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .container{
+      width:100%;
+      max-width:980px;
+      margin:0 auto;
+      padding:16px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      margin-bottom:16px;
+    }
+
+    .hero{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .logo-box{
+      width:140px;
+      height:90px;
+      border-radius:16px;
+      background:#000;
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex-shrink:0;
+      padding:10px;
+    }
+
+    .logo-box img{
+      max-width:100%;
+      max-height:100%;
+      width:auto;
+      height:auto;
+      object-fit:contain;
+      display:block;
+    }
+
+    h1{
+      font-size:24px;
+      margin:0 0 6px;
+    }
+
+    h2{
+      font-size:20px;
+      margin:0 0 12px;
+    }
+
+    h3{
+      font-size:17px;
+      margin:0 0 12px;
+    }
+
+    p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.4;
+    }
+
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .grid-2{
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .grid-3{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+
+    @media (max-width:760px){
+      .grid-2,.grid-3{
+        grid-template-columns:1fr;
+      }
+
+      .hero{
+        align-items:center;
+      }
+    }
+
+    label{
+      display:block;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="email"],
+    textarea,
+    select{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      font-size:15px;
+      background:#fff;
+      color:var(--text);
+    }
+
+    textarea{
+      min-height:92px;
+      resize:vertical;
+    }
+
+    .helper{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:4px;
+    }
+
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:12px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      padding:8px 12px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#1e3a8a;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .question{
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:10px;
+      background:#fafafa;
+    }
+
+    .question-title{
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:10px;
+      line-height:1.35;
+    }
+
+    .radio-group{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .radio-pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:10px 12px;
+      background:#fff;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    .radio-pill input{
+      margin:0;
+    }
+
+    .check-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .check-item{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      border:1px solid #e5e7eb;
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .check-item input{
+      margin-top:3px;
+    }
+
+    .decision-box{
+      border-left:5px solid var(--accent);
+      background:#eff6ff;
+      padding:12px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    .warning{
+      border-left:5px solid var(--warn);
+      background:#fff7ed;
+      color:#9a3412;
+      padding:12px;
+      border-radius:12px;
+      font-size:14px;
+      margin-top:12px;
+    }
+
+    .danger{
+      border-left:5px solid var(--danger);
+      background:#fef2f2;
+      color:#991b1b;
+      padding:12px;
+      border-radius:12px;
+      font-size:14px;
+      margin-top:12px;
+    }
+
+    .success{
+      border-left:5px solid var(--ok);
+      background:#f0fdf4;
+      color:#166534;
+      padding:12px;
+      border-radius:12px;
+      font-size:14px;
+      margin-top:12px;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    button{
+      border:none;
+      border-radius:14px;
+      padding:14px 18px;
+      font-size:15px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .btn-secondary{
+      background:#fff;
+      color:var(--text);
+      border:1px solid var(--border);
+    }
+
+    .progress-wrap{
+      margin-top:10px;
+    }
+
+    .progress{
+      width:100%;
+      height:12px;
+      background:#e5e7eb;
+      border-radius:999px;
+      overflow:hidden;
+    }
+
+    .progress-bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,#2563eb,#1d4ed8);
+      transition:width .2s ease;
+    }
+
+    .small{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:6px;
+    }
+
+    .hidden{
+      display:none;
+    }
+
+    .footer-note{
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      padding:12px 0 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="hero">
+        <div class="logo-box">
+          <img
+            id="companyLogo"
+            alt="Logo ITT1878"
+            src="./logo-itt-1878.png"
+          >
+        </div>
+
+        <div style="flex:1;min-width:260px;">
+          <h1>Check-list de seguridad en campo</h1>
+          <p>Cumplimentar antes de iniciar cualquier intervención fuera del taller.</p>
+          <div class="progress-wrap">
+            <div class="progress">
+              <div id="progressBar" class="progress-bar"></div>
+            </div>
+            <div id="progressText" class="small">0% completado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form id="safetyForm">
+      <div class="card">
+        <div class="section-title">
+          <h2>1. Datos generales</h2>
+          <span class="badge">Obligatorio antes de empezar</span>
+        </div>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+          <div>
+            <label for="hora">Hora</label>
+            <input type="time" id="hora" name="hora" required>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div>
+            <label for="clienteUbicacion">Cliente / ubicación</label>
+            <input type="text" id="clienteUbicacion" name="clienteUbicacion" required>
+          </div>
+          <div>
+            <label for="interlocutorCliente">Interlocutor del cliente</label>
+            <input type="text" id="interlocutorCliente" name="interlocutorCliente">
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div>
+            <label for="tecnicoAsignado">Técnico/s asignado/s</label>
+            <input type="text" id="tecnicoAsignado" name="tecnicoAsignado" required>
+          </div>
+          <div>
+            <label for="responsableAutoriza">Responsable que autoriza</label>
+            <input type="text" id="responsableAutoriza" name="responsableAutoriza">
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:14px;">
+          <div>
+            <label for="maquinaEquipo">Máquina / equipo</label>
+            <input type="text" id="maquinaEquipo" name="maquinaEquipo" required>
+          </div>
+          <div>
+            <label for="emailDestino">Email de destino</label>
+            <input type="email" id="emailDestino" name="emailDestino" value="kevin.gancino@cm93.com" required>
+            <div class="helper">Aquí llegará la copia automática por EmailJS.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label for="trabajoRealizar">Trabajo a realizar</label>
+          <textarea id="trabajoRealizar" name="trabajoRealizar" required></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-title">
+          <h2>2. Clasificación inicial del trabajo</h2>
+        </div>
+
+        <div class="radio-group" style="margin-bottom:14px;">
+          <label class="radio-pill">
+            <input type="radio" name="clasificacionTrabajo" value="Trabajo no crítico" checked>
+            Trabajo no crítico
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="clasificacionTrabajo" value="Trabajo crítico">
+            Trabajo crítico
+          </label>
+        </div>
+
+        <div id="criticalReasonsBlock" class="hidden">
+          <label>Marcar motivo/s de trabajo crítico</label>
+          <div class="check-list">
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Elevación de maquinaria"> Elevación de maquinaria</label>
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Desmontaje o montaje de ruedas o componentes de gran peso"> Desmontaje o montaje de ruedas o componentes de gran peso</label>
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Trabajo en altura: requiere uso de arnés o sistema anticaídas"> Trabajo en altura: requiere uso de arnés o sistema anticaídas</label>
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Riesgo grave de atrapamiento"> Riesgo grave de atrapamiento</label>
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Terreno, acceso o entorno desfavorable"> Terreno, acceso o entorno desfavorable</label>
+            <label class="check-item"><input type="checkbox" name="motivoCritico" value="Condiciones ambientales adversas"> Condiciones ambientales adversas</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="questionsContainer"></div>
+
+      <div class="card">
+        <div class="section-title">
+          <h2>7. Decisión previa al inicio</h2>
+        </div>
+
+        <div class="radio-group" style="margin-bottom:14px;">
+          <label class="radio-pill"><input type="radio" name="decisionFinal" value="Apto para realizar in situ"> Apto para realizar in situ</label>
+          <label class="radio-pill"><input type="radio" name="decisionFinal" value="Apto con medidas adicionales"> Apto con medidas adicionales</label>
+          <label class="radio-pill"><input type="radio" name="decisionFinal" value="No apto para realizar in situ"> No apto para realizar in situ</label>
+          <label class="radio-pill"><input type="radio" name="decisionFinal" value="Se traslada al taller"> Se traslada al taller</label>
+          <label class="radio-pill"><input type="radio" name="decisionFinal" value="Se aplaza hasta disponer de medios adecuados"> Se aplaza hasta disponer de medios adecuados</label>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label for="medidasAdicionales">Medidas adicionales exigidas antes de iniciar el trabajo</label>
+          <textarea id="medidasAdicionales" name="medidasAdicionales"></textarea>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <label for="motivoNoApto">Motivo de no aptitud, si aplica</label>
+          <textarea id="motivoNoApto" name="motivoNoApto"></textarea>
+        </div>
+
+        <div class="grid grid-2">
+          <div>
+            <label for="firmaTecnico">Nombre y firma del técnico</label>
+            <input type="text" id="firmaTecnico" name="firmaTecnico" required>
+          </div>
+          <div>
+            <label for="fechaHoraRegistro">Fecha/hora registro</label>
+            <input type="text" id="fechaHoraRegistro" name="fechaHoraRegistro" readonly>
+          </div>
+        </div>
+
+        <div id="decisionSuggestion" class="decision-box" style="margin-top:14px;">
+          Sugerencia automática: pendiente de evaluación.
+        </div>
+
+        <div id="alertBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="actions">
+          <button type="button" class="btn-secondary" onclick="generatePDF()">Generar PDF</button>
+          <button type="button" class="btn-secondary" onclick="window.print()">Imprimir</button>
+          <button type="submit" class="btn-primary">Guardar y enviar</button>
+        </div>
+        <div class="helper" style="margin-top:12px;">
+          Esta versión envía el contenido por EmailJS y genera el PDF en el navegador.
+        </div>
+      </div>
+    </form>
+
+    <div class="footer-note">
+      ITT1878 · Check-list de seguridad en campo
+    </div>
+  </div>
+
+  <script>
+    const COMPANY_NAME = "ITT1878";
+    const EMAILJS_PUBLIC_KEY = "TU_PUBLIC_KEY";
+    const EMAILJS_SERVICE_ID = "TU_SERVICE_ID";
+    const EMAILJS_TEMPLATE_ID = "TU_TEMPLATE_ID";
+
+    emailjs.init({
+      publicKey: EMAILJS_PUBLIC_KEY,
+    });
+
+    const sections = [
+      {
+        id: "entorno",
+        title: "3. Comprobación previa del entorno",
+        observationName: "observacionesEntorno",
+        questions: [
+          "Suelo firme y estable",
+          "No hay obstáculos alrededor que puedan dificultar el trabajo a realizar",
+          "Espacio suficiente para maniobra",
+          "Iluminación suficiente",
+          "Condiciones meteorológicas compatibles",
+          "Zona delimitada y señalizada para trabajar, sin posibilidad de causar daños a terceros",
+          "Sin interferencias no controladas del cliente o terceros"
+        ]
+      },
+      {
+        id: "maquina",
+        title: "4. Comprobación de la máquina",
+        observationName: "observacionesMaquina",
+        questions: [
+          "Motor parado",
+          "Llave retirada / consignación realizada",
+          "Freno aplicado",
+          "Calzos colocados, si procede",
+          "Elementos suspendidos o hidráulicos en posición segura",
+          "Máquina estable",
+          "Puntos de apoyo/elevación identificados",
+          "Riesgo de movimiento involuntario controlado"
+        ]
+      },
+      {
+        id: "medios",
+        title: "5. Medios de trabajo y protección",
+        observationName: "observacionesMedios",
+        questions: [
+          "Herramientas adecuadas",
+          "Gato/equipo de elevación adecuado y suficiente",
+          "Soportes secundarios disponibles",
+          "Medios de manipulación de cargas disponibles, si procede",
+          "Medio seguro de acceso/trabajo en altura disponible, si procede",
+          "Arnés y sistema anticaídas disponibles, si procede",
+          "Punto de anclaje identificado y apto, si procede",
+          "EPIs disponibles y correctos",
+          "Número de operarios para realizar la reparación es suficiente"
+        ]
+      },
+      {
+        id: "coordinacion",
+        title: "6. Coordinación con el cliente",
+        observationName: "observacionesCoordinacion",
+        questions: [
+          "Responsable del cliente identificado",
+          "Riesgos del lugar informados",
+          "Medidas preventivas coordinadas",
+          "Zona de trabajo autorizada",
+          "Sin interferencias previstas durante la intervención"
+        ]
+      }
+    ];
+
+    const criticalSection = {
+      id: "verificacionCritica",
+      title: "6. Verificación específica · Solo trabajo crítico",
+      observationName: "observacionesCriticas",
+      groups: [
+        {
+          subtitle: "6.1 Condiciones para autorizar",
+          questions: [
+            "El trabajo crítico está claramente definido",
+            "Los riesgos específicos están identificados",
+            "El trabajo puede ejecutarse sin improvisaciones",
+            "Los medios son suficientes y adecuados",
+            "El entorno permite trabajar con seguridad",
+            "La máquina puede mantenerse estable y controlada",
+            "El personal tiene formación/experiencia suficiente",
+            "Se han previsto medidas específicas del riesgo crítico"
+          ]
+        },
+        {
+          subtitle: "6.2 Medidas específicas aplicables",
+          questions: [
+            "Elevación con apoyo secundario asegurado",
+            "Manipulación de carga con ayuda mecánica, si procede",
+            "Trabajo en altura con medio de acceso adecuado",
+            "Uso de arnés autorizado",
+            "Punto de anclaje previsto por fabricante o validado técnicamente",
+            "Segundo operario asignado, si procede"
+          ]
+        }
+      ]
+    };
+
+    const container = document.getElementById("questionsContainer");
+
+    function createRadioQuestion(name, title){
+      return `
+        <div class="question">
+          <div class="question-title">${title}</div>
+          <div class="radio-group">
+            <label class="radio-pill"><input type="radio" name="${name}" value="Sí"> Sí</label>
+            <label class="radio-pill"><input type="radio" name="${name}" value="No"> No</label>
+            <label class="radio-pill"><input type="radio" name="${name}" value="No procede"> No procede</label>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSections(){
+      let html = "";
+
+      sections.forEach(section => {
+        html += `
+          <div class="card">
+            <div class="section-title">
+              <h2>${section.title}</h2>
+            </div>
+        `;
+
+        section.questions.forEach((q, idx) => {
+          const name = `${section.id}_${idx}`;
+          html += createRadioQuestion(name, q);
+        });
+
+        html += `
+            <div style="margin-top:12px;">
+              <label for="${section.observationName}">Observaciones</label>
+              <textarea id="${section.observationName}" name="${section.observationName}"></textarea>
+            </div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div id="criticalSectionWrapper" class="card hidden">
+          <div class="section-title">
+            <h2>${criticalSection.title}</h2>
+          </div>
+      `;
+
+      criticalSection.groups.forEach((group, groupIndex) => {
+        html += `<h3>${group.subtitle}</h3>`;
+        group.questions.forEach((q, idx) => {
+          const name = `${criticalSection.id}_${groupIndex}_${idx}`;
+          html += createRadioQuestion(name, q);
+        });
+      });
+
+      html += `
+          <div style="margin-top:12px;">
+            <label for="${criticalSection.observationName}">Observaciones trabajo crítico</label>
+            <textarea id="${criticalSection.observationName}" name="${criticalSection.observationName}"></textarea>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    renderSections();
+
+    function setCurrentDateTime(){
+      const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      const dd = String(now.getDate()).padStart(2,"0");
+      const hh = String(now.getHours()).padStart(2,"0");
+      const mi = String(now.getMinutes()).padStart(2,"0");
+
+      document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
+      document.getElementById("hora").value = `${hh}:${mi}`;
+      document.getElementById("fechaHoraRegistro").value = `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+    }
+
+    setCurrentDateTime();
+
+    const criticalReasonsBlock = document.getElementById("criticalReasonsBlock");
+    const criticalSectionWrapper = document.getElementById("criticalSectionWrapper");
+
+    document.querySelectorAll('input[name="clasificacionTrabajo"]').forEach(radio => {
+      radio.addEventListener("change", () => {
+        const isCritical = getSelectedValue("clasificacionTrabajo") === "Trabajo crítico";
+        criticalReasonsBlock.classList.toggle("hidden", !isCritical);
+        criticalSectionWrapper.classList.toggle("hidden", !isCritical);
+        updateProgress();
+        evaluateDecisionSuggestion();
+      });
+    });
+
+    function getSelectedValue(name){
+      const checked = document.querySelector(`input[name="${name}"]:checked`);
+      return checked ? checked.value : "";
+    }
+
+    function getCheckedValues(name){
+      return [...document.querySelectorAll(`input[name="${name}"]:checked`)].map(el => el.value);
+    }
+
+    function sanitize(text){
+      return (text || "").replace(/\s+/g, " ").trim();
+    }
+
+    function slug(text){
+      return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "_");
+    }
+
+    function collectFormData(){
+      const data = {
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value,
+        clienteUbicacion: sanitize(document.getElementById("clienteUbicacion").value),
+        interlocutorCliente: sanitize(document.getElementById("interlocutorCliente").value),
+        tecnicoAsignado: sanitize(document.getElementById("tecnicoAsignado").value),
+        responsableAutoriza: sanitize(document.getElementById("responsableAutoriza").value),
+        maquinaEquipo: sanitize(document.getElementById("maquinaEquipo").value),
+        trabajoRealizar: sanitize(document.getElementById("trabajoRealizar").value),
+        emailDestino: sanitize(document.getElementById("emailDestino").value),
+        clasificacionTrabajo: getSelectedValue("clasificacionTrabajo"),
+        motivosCriticos: getCheckedValues("motivoCritico"),
+        observacionesEntorno: sanitize(document.getElementById("observacionesEntorno")?.value || ""),
+        observacionesMaquina: sanitize(document.getElementById("observacionesMaquina")?.value || ""),
+        observacionesMedios: sanitize(document.getElementById("observacionesMedios")?.value || ""),
+        observacionesCoordinacion: sanitize(document.getElementById("observacionesCoordinacion")?.value || ""),
+        observacionesCriticas: sanitize(document.getElementById("observacionesCriticas")?.value || ""),
+        decisionFinal: getSelectedValue("decisionFinal"),
+        medidasAdicionales: sanitize(document.getElementById("medidasAdicionales").value),
+        motivoNoApto: sanitize(document.getElementById("motivoNoApto").value),
+        firmaTecnico: sanitize(document.getElementById("firmaTecnico").value),
+        fechaHoraRegistro: sanitize(document.getElementById("fechaHoraRegistro").value),
+        respuestas: {}
+      };
+
+      sections.forEach(section => {
+        section.questions.forEach((q, idx) => {
+          data.respuestas[q] = getSelectedValue(`${section.id}_${idx}`);
+        });
+      });
+
+      if (data.clasificacionTrabajo === "Trabajo crítico") {
+        criticalSection.groups.forEach((group, gIdx) => {
+          group.questions.forEach((q, idx) => {
+            data.respuestas[q] = getSelectedValue(`${criticalSection.id}_${gIdx}_${idx}`);
+          });
+        });
+      }
+
+      return data;
+    }
+
+    function validateForm(data){
+      const requiredText = [
+        ["fecha", "Fecha"],
+        ["hora", "Hora"],
+        ["clienteUbicacion", "Cliente / ubicación"],
+        ["tecnicoAsignado", "Técnico/s asignado/s"],
+        ["maquinaEquipo", "Máquina / equipo"],
+        ["trabajoRealizar", "Trabajo a realizar"],
+        ["emailDestino", "Email de destino"],
+        ["firmaTecnico", "Nombre y firma del técnico"]
+      ];
+
+      const missing = [];
+      requiredText.forEach(([key, label]) => {
+        if (!data[key]) missing.push(label);
+      });
+
+      return {
+        valid: missing.length === 0,
+        missing
+      };
+    }
+
+    function updateProgress(){
+      let total = 0;
+      let done = 0;
+
+      const importantIds = [
+        "fecha","hora","clienteUbicacion","tecnicoAsignado","maquinaEquipo",
+        "trabajoRealizar","emailDestino","firmaTecnico"
+      ];
+
+      importantIds.forEach(id => {
+        total++;
+        if (document.getElementById(id)?.value.trim()) done++;
+      });
+
+      total++;
+      if (getSelectedValue("clasificacionTrabajo")) done++;
+
+      total++;
+      if (getSelectedValue("decisionFinal")) done++;
+
+      sections.forEach(section => {
+        section.questions.forEach((q, idx) => {
+          total++;
+          if (getSelectedValue(`${section.id}_${idx}`)) done++;
+        });
+      });
+
+      const isCritical = getSelectedValue("clasificacionTrabajo") === "Trabajo crítico";
+      if (isCritical) {
+        total++;
+        if (getCheckedValues("motivoCritico").length > 0) done++;
+
+        criticalSection.groups.forEach((group, gIdx) => {
+          group.questions.forEach((q, idx) => {
+            total++;
+            if (getSelectedValue(`${criticalSection.id}_${gIdx}_${idx}`)) done++;
+          });
+        });
+      }
+
+      const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+      document.getElementById("progressBar").style.width = percent + "%";
+      document.getElementById("progressText").textContent = `${percent}% completado`;
+    }
+
+    document.addEventListener("input", updateProgress);
+    document.addEventListener("change", () => {
+      updateProgress();
+      evaluateDecisionSuggestion();
+    });
+    updateProgress();
+
+    function evaluateDecisionSuggestion(){
+      const data = collectFormData();
+      const noAnswers = Object.values(data.respuestas).filter(v => v === "No").length;
+      const suggestionBox = document.getElementById("decisionSuggestion");
+      const alertBox = document.getElementById("alertBox");
+
+      let suggestion = "Pendiente de evaluación.";
+      let alertHTML = "";
+
+      if (noAnswers === 0 && Object.keys(data.respuestas).length > 0) {
+        suggestion = "Apto para realizar in situ";
+      } else if (noAnswers > 0 && noAnswers <= 3) {
+        suggestion = "Apto con medidas adicionales";
+        alertHTML = `<div class="warning">Se han detectado ${noAnswers} respuesta/s en “No”. Revisar medidas preventivas antes de iniciar.</div>`;
+      } else if (noAnswers > 3) {
+        suggestion = "No apto para realizar in situ / reevaluar";
+        alertHTML = `<div class="danger">Hay ${noAnswers} respuesta/s en “No”. El trabajo debería reevaluarse antes de ejecutarlo.</div>`;
+      }
+
+      suggestionBox.textContent = `Sugerencia automática: ${suggestion}`;
+      alertBox.innerHTML = alertHTML;
+    }
+
+    async function generatePDF(returnBlob = false){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: "mm", format: "a4" });
+      const data = collectFormData();
+      const validation = validateForm(data);
+
+      let y = 12;
+      const left = 12;
+      const pageHeight = 285;
+      const lineHeight = 6;
+      const maxWidth = 185;
+
+      function addLine(text, isTitle = false){
+        const fontSize = isTitle ? 13 : 10;
+        doc.setFont("helvetica", isTitle ? "bold" : "normal");
+        doc.setFontSize(fontSize);
+        const lines = doc.splitTextToSize(text, maxWidth);
+
+        if (y + (lines.length * lineHeight) > pageHeight) {
+          doc.addPage();
+          y = 12;
+        }
+
+        doc.text(lines, left, y);
+        y += (lines.length * lineHeight) + 1;
+      }
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text(`${COMPANY_NAME} · Check-list de seguridad en campo`, left, y);
+      y += 8;
+
+      addLine(`Fecha: ${data.fecha}  |  Hora: ${data.hora}`);
+      addLine(`Cliente / ubicación: ${data.clienteUbicacion}`);
+      addLine(`Interlocutor del cliente: ${data.interlocutorCliente || "-"}`);
+      addLine(`Técnico/s asignado/s: ${data.tecnicoAsignado}`);
+      addLine(`Responsable que autoriza: ${data.responsableAutoriza || "-"}`);
+      addLine(`Máquina / equipo: ${data.maquinaEquipo}`);
+      addLine(`Trabajo a realizar: ${data.trabajoRealizar}`);
+      addLine(`Clasificación: ${data.clasificacionTrabajo}`);
+      addLine(`Motivos críticos: ${data.motivosCriticos.length ? data.motivosCriticos.join(", ") : "-"}`);
+
+      addLine(" ");
+      addLine("RESULTADOS DEL CHECK-LIST", true);
+
+      for (const [key, value] of Object.entries(data.respuestas)) {
+        addLine(`• ${key}: ${value || "-"}`);
+      }
+
+      addLine(" ");
+      addLine("OBSERVACIONES", true);
+      addLine(`Entorno: ${data.observacionesEntorno || "-"}`);
+      addLine(`Máquina: ${data.observacionesMaquina || "-"}`);
+      addLine(`Medios y EPIs: ${data.observacionesMedios || "-"}`);
+      addLine(`Coordinación: ${data.observacionesCoordinacion || "-"}`);
+      addLine(`Trabajo crítico: ${data.observacionesCriticas || "-"}`);
+
+      addLine(" ");
+      addLine("DECISIÓN FINAL", true);
+      addLine(`Decisión: ${data.decisionFinal || "-"}`);
+      addLine(`Medidas adicionales: ${data.medidasAdicionales || "-"}`);
+      addLine(`Motivo de no aptitud: ${data.motivoNoApto || "-"}`);
+      addLine(`Firma técnico: ${data.firmaTecnico}`);
+      addLine(`Fecha/hora registro: ${data.fechaHoraRegistro}`);
+
+      if (!validation.valid) {
+        addLine(" ");
+        addLine("AVISO", true);
+        addLine(`Faltan campos obligatorios: ${validation.missing.join(", ")}`);
+      }
+
+      if (returnBlob) {
+        return doc.output("blob");
+      }
+
+      const filename = `checklist_${slug(data.clienteUbicacion || "cliente")}_${slug(data.maquinaEquipo || "maquina")}_${data.fecha || "sin_fecha"}.pdf`;
+      doc.save(filename);
+    }
+
+    async function sendEmailWithEmailJS(data){
+      const resumenRespuestas = Object.entries(data.respuestas)
+        .map(([k,v]) => `- ${k}: ${v || "-"}`)
+        .join("\n");
+
+      const templateParams = {
+        company_name: COMPANY_NAME,
+        fecha: data.fecha,
+        hora: data.hora,
+        cliente_ubicacion: data.clienteUbicacion,
+        interlocutor_cliente: data.interlocutorCliente || "-",
+        tecnico_asignado: data.tecnicoAsignado,
+        responsable_autoriza: data.responsableAutoriza || "-",
+        maquina_equipo: data.maquinaEquipo,
+        trabajo_realizar: data.trabajoRealizar,
+        clasificacion_trabajo: data.clasificacionTrabajo,
+        motivos_criticos: data.motivosCriticos.length ? data.motivosCriticos.join(", ") : "-",
+        observaciones_entorno: data.observacionesEntorno || "-",
+        observaciones_maquina: data.observacionesMaquina || "-",
+        observaciones_medios: data.observacionesMedios || "-",
+        observaciones_coordinacion: data.observacionesCoordinacion || "-",
+        observaciones_criticas: data.observacionesCriticas || "-",
+        decision_final: data.decisionFinal || "-",
+        medidas_adicionales: data.medidasAdicionales || "-",
+        motivo_no_apto: data.motivoNoApto || "-",
+        firma_tecnico: data.firmaTecnico,
+        fecha_hora_registro: data.fechaHoraRegistro,
+        respuestas: resumenRespuestas,
+        to_email: data.emailDestino,
+        reply_to: data.emailDestino,
+        subject_line: `[CHECKLIST CAMPO] ${data.clienteUbicacion} - ${data.maquinaEquipo} - ${data.fecha}`
+      };
+
+      return emailjs.send(
+        EMAILJS_SERVICE_ID,
+        EMAILJS_TEMPLATE_ID,
+        templateParams
+      );
+    }
+
+    document.getElementById("safetyForm").addEventListener("submit", async function(e){
+      e.preventDefault();
+
+      const data = collectFormData();
+      const validation = validateForm(data);
+      const alertBox = document.getElementById("alertBox");
+
+      if (!validation.valid) {
+        alertBox.innerHTML = `<div class="danger">Faltan campos obligatorios: ${validation.missing.join(", ")}</div>`;
+        return;
+      }
+
+      try {
+        await generatePDF(false);
+        await sendEmailWithEmailJS(data);
+
+        alertBox.innerHTML = `<div class="success">Checklist enviado correctamente y PDF generado.</div>`;
+        this.reset();
+        setCurrentDateTime();
+        document.querySelector('input[name="clasificacionTrabajo"][value="Trabajo no crítico"]').checked = true;
+        criticalReasonsBlock.classList.add("hidden");
+        criticalSectionWrapper.classList.add("hidden");
+        document.getElementById("emailDestino").value = "kevin.gancino@cm93.com";
+        document.getElementById("decisionSuggestion").textContent = "Sugerencia automática: pendiente de evaluación.";
+        updateProgress();
+      } catch (error) {
+        console.error(error);
+        alertBox.innerHTML = `<div class="danger">No se ha podido enviar el email. Revisa la configuración de EmailJS.</div>`;
+      }
+    });
+  </script>
+</body>
+</html>
