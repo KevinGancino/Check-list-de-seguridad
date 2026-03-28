@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ITT1878 · Check-list de seguridad en campo</title>
 
-  <!-- EmailJS -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
@@ -111,12 +108,8 @@
       grid-template-columns:repeat(2,minmax(0,1fr));
     }
 
-    .grid-3{
-      grid-template-columns:repeat(3,minmax(0,1fr));
-    }
-
     @media (max-width:760px){
-      .grid-2,.grid-3{
+      .grid-2{
         grid-template-columns:1fr;
       }
 
@@ -400,13 +393,13 @@
 
         <div class="grid grid-2" style="margin-top:14px;">
           <div>
-            <label for="maquinaEquipo">Máquina / equipo</label>
-            <input type="text" id="maquinaEquipo" name="maquinaEquipo" required>
+            <label for="emailDestino">Email responsable</label>
+            <input type="email" id="emailDestino" name="emailDestino" placeholder="responsable@empresa.com" required>
+            <div class="helper">Debe introducirse manualmente en cada checklist.</div>
           </div>
           <div>
-            <label for="emailDestino">Email de destino</label>
-            <input type="email" id="emailDestino" name="emailDestino" value="kevin.gancino@cm93.com" required>
-            <div class="helper">Aquí llegará la copia automática por EmailJS.</div>
+            <label for="maquinaEquipo">Máquina / equipo</label>
+            <input type="text" id="maquinaEquipo" name="maquinaEquipo" required>
           </div>
         </div>
 
@@ -495,7 +488,7 @@
           <button type="submit" class="btn-primary">Guardar y enviar</button>
         </div>
         <div class="helper" style="margin-top:12px;">
-          Esta versión envía el contenido por EmailJS y genera el PDF en el navegador.
+          Esta versión envía el checklist y el PDF a n8n.
         </div>
       </div>
     </form>
@@ -507,13 +500,7 @@
 
   <script>
     const COMPANY_NAME = "ITT1878";
-    const EMAILJS_PUBLIC_KEY = "TU_PUBLIC_KEY";
-    const EMAILJS_SERVICE_ID = "TU_SERVICE_ID";
-    const EMAILJS_TEMPLATE_ID = "TU_TEMPLATE_ID";
-
-    emailjs.init({
-      publicKey: EMAILJS_PUBLIC_KEY,
-    });
+    const N8N_WEBHOOK_URL = "https://keviingc.app.n8n.cloud/webhook-test/encuesta-seguridad";
 
     const sections = [
       {
@@ -678,10 +665,10 @@
     function setCurrentDateTime(){
       const now = new Date();
       const yyyy = now.getFullYear();
-      const mm = String(now.getMonth()+1).padStart(2,"0");
-      const dd = String(now.getDate()).padStart(2,"0");
-      const hh = String(now.getHours()).padStart(2,"0");
-      const mi = String(now.getMinutes()).padStart(2,"0");
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const dd = String(now.getDate()).padStart(2, "0");
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mi = String(now.getMinutes()).padStart(2, "0");
 
       document.getElementById("fecha").value = `${yyyy}-${mm}-${dd}`;
       document.getElementById("hora").value = `${hh}:${mi}`;
@@ -724,6 +711,19 @@
         .replace(/[^a-z0-9]+/g, "_");
     }
 
+    function base64FromArrayBuffer(arrayBuffer){
+      let binary = "";
+      const bytes = new Uint8Array(arrayBuffer);
+      const chunkSize = 0x8000;
+
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, chunk);
+      }
+
+      return btoa(binary);
+    }
+
     function collectFormData(){
       const data = {
         fecha: document.getElementById("fecha").value,
@@ -732,9 +732,9 @@
         interlocutorCliente: sanitize(document.getElementById("interlocutorCliente").value),
         tecnicoAsignado: sanitize(document.getElementById("tecnicoAsignado").value),
         responsableAutoriza: sanitize(document.getElementById("responsableAutoriza").value),
+        emailDestino: sanitize(document.getElementById("emailDestino").value),
         maquinaEquipo: sanitize(document.getElementById("maquinaEquipo").value),
         trabajoRealizar: sanitize(document.getElementById("trabajoRealizar").value),
-        emailDestino: sanitize(document.getElementById("emailDestino").value),
         clasificacionTrabajo: getSelectedValue("clasificacionTrabajo"),
         motivosCriticos: getCheckedValues("motivoCritico"),
         observacionesEntorno: sanitize(document.getElementById("observacionesEntorno")?.value || ""),
@@ -773,9 +773,9 @@
         ["hora", "Hora"],
         ["clienteUbicacion", "Cliente / ubicación"],
         ["tecnicoAsignado", "Técnico/s asignado/s"],
+        ["emailDestino", "Email responsable"],
         ["maquinaEquipo", "Máquina / equipo"],
         ["trabajoRealizar", "Trabajo a realizar"],
-        ["emailDestino", "Email de destino"],
         ["firmaTecnico", "Nombre y firma del técnico"]
       ];
 
@@ -795,8 +795,8 @@
       let done = 0;
 
       const importantIds = [
-        "fecha","hora","clienteUbicacion","tecnicoAsignado","maquinaEquipo",
-        "trabajoRealizar","emailDestino","firmaTecnico"
+        "fecha","hora","clienteUbicacion","tecnicoAsignado","emailDestino",
+        "maquinaEquipo","trabajoRealizar","firmaTecnico"
       ];
 
       importantIds.forEach(id => {
@@ -865,7 +865,7 @@
       alertBox.innerHTML = alertHTML;
     }
 
-    async function generatePDF(returnBlob = false){
+    async function buildPDFDocument(){
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF({ unit: "mm", format: "a4" });
       const data = collectFormData();
@@ -902,6 +902,7 @@
       addLine(`Interlocutor del cliente: ${data.interlocutorCliente || "-"}`);
       addLine(`Técnico/s asignado/s: ${data.tecnicoAsignado}`);
       addLine(`Responsable que autoriza: ${data.responsableAutoriza || "-"}`);
+      addLine(`Email responsable: ${data.emailDestino}`);
       addLine(`Máquina / equipo: ${data.maquinaEquipo}`);
       addLine(`Trabajo a realizar: ${data.trabajoRealizar}`);
       addLine(`Clasificación: ${data.clasificacionTrabajo}`);
@@ -936,52 +937,97 @@
         addLine(`Faltan campos obligatorios: ${validation.missing.join(", ")}`);
       }
 
-      if (returnBlob) {
-        return doc.output("blob");
-      }
+      return doc;
+    }
 
+    async function generatePDF(){
+      const doc = await buildPDFDocument();
+      const data = collectFormData();
       const filename = `checklist_${slug(data.clienteUbicacion || "cliente")}_${slug(data.maquinaEquipo || "maquina")}_${data.fecha || "sin_fecha"}.pdf`;
       doc.save(filename);
     }
 
-    async function sendEmailWithEmailJS(data){
-      const resumenRespuestas = Object.entries(data.respuestas)
-        .map(([k,v]) => `- ${k}: ${v || "-"}`)
-        .join("\n");
+    async function getPDFPayload(){
+      const doc = await buildPDFDocument();
+      const data = collectFormData();
+      const filename = `checklist_${slug(data.clienteUbicacion || "cliente")}_${slug(data.maquinaEquipo || "maquina")}_${data.fecha || "sin_fecha"}.pdf`;
 
-      const templateParams = {
-        company_name: COMPANY_NAME,
-        fecha: data.fecha,
-        hora: data.hora,
-        cliente_ubicacion: data.clienteUbicacion,
-        interlocutor_cliente: data.interlocutorCliente || "-",
-        tecnico_asignado: data.tecnicoAsignado,
-        responsable_autoriza: data.responsableAutoriza || "-",
-        maquina_equipo: data.maquinaEquipo,
-        trabajo_realizar: data.trabajoRealizar,
-        clasificacion_trabajo: data.clasificacionTrabajo,
-        motivos_criticos: data.motivosCriticos.length ? data.motivosCriticos.join(", ") : "-",
-        observaciones_entorno: data.observacionesEntorno || "-",
-        observaciones_maquina: data.observacionesMaquina || "-",
-        observaciones_medios: data.observacionesMedios || "-",
-        observaciones_coordinacion: data.observacionesCoordinacion || "-",
-        observaciones_criticas: data.observacionesCriticas || "-",
-        decision_final: data.decisionFinal || "-",
-        medidas_adicionales: data.medidasAdicionales || "-",
-        motivo_no_apto: data.motivoNoApto || "-",
-        firma_tecnico: data.firmaTecnico,
-        fecha_hora_registro: data.fechaHoraRegistro,
-        respuestas: resumenRespuestas,
-        to_email: data.emailDestino,
-        reply_to: data.emailDestino,
-        subject_line: `[CHECKLIST CAMPO] ${data.clienteUbicacion} - ${data.maquinaEquipo} - ${data.fecha}`
+      const pdfArrayBuffer = doc.output("arraybuffer");
+      const pdfBase64 = base64FromArrayBuffer(pdfArrayBuffer);
+
+      return {
+        fileName: filename,
+        mimeType: "application/pdf",
+        base64: pdfBase64
+      };
+    }
+
+    async function sendToN8N(data, pdfPayload){
+      const respuestasArray = Object.entries(data.respuestas).map(([pregunta, respuesta]) => ({
+        pregunta,
+        respuesta: respuesta || "-"
+      }));
+
+      const payload = {
+        empresa: COMPANY_NAME,
+        operario: data.tecnicoAsignado,
+        tecnicoAsignado: data.tecnicoAsignado,
+        responsable: data.responsableAutoriza,
+        emailResponsable: data.emailDestino,
+        clienteUbicacion: data.clienteUbicacion,
+        interlocutorCliente: data.interlocutorCliente,
+        maquina: data.maquinaEquipo,
+        maquinaEquipo: data.maquinaEquipo,
+        trabajoRealizar: data.trabajoRealizar,
+        clasificacionTrabajo: data.clasificacionTrabajo,
+        motivosCriticos: data.motivosCriticos,
+        decisionFinal: data.decisionFinal,
+        medidasAdicionales: data.medidasAdicionales,
+        motivoNoApto: data.motivoNoApto,
+        firmaTecnico: data.firmaTecnico,
+        fechaEnvioIso: new Date().toISOString(),
+        fechaFormulario: data.fecha,
+        horaFormulario: data.hora,
+        fechaHoraRegistro: data.fechaHoraRegistro,
+        respuestas: respuestasArray,
+        observaciones: {
+          entorno: data.observacionesEntorno,
+          maquina: data.observacionesMaquina,
+          medios: data.observacionesMedios,
+          coordinacion: data.observacionesCoordinacion,
+          criticas: data.observacionesCriticas
+        },
+        pdf: {
+          fileName: pdfPayload.fileName,
+          mimeType: pdfPayload.mimeType,
+          base64: pdfPayload.base64
+        }
       };
 
-      return emailjs.send(
-        EMAILJS_SERVICE_ID,
-        EMAILJS_TEMPLATE_ID,
-        templateParams
-      );
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al enviar a n8n: ${response.status} ${response.statusText}`);
+      }
+
+      return response;
+    }
+
+    function resetFormAfterSubmit(formElement){
+      formElement.reset();
+      setCurrentDateTime();
+      document.querySelector('input[name="clasificacionTrabajo"][value="Trabajo no crítico"]').checked = true;
+      criticalReasonsBlock.classList.add("hidden");
+      criticalSectionWrapper.classList.add("hidden");
+      document.getElementById("decisionSuggestion").textContent = "Sugerencia automática: pendiente de evaluación.";
+      updateProgress();
+      evaluateDecisionSuggestion();
     }
 
     document.getElementById("safetyForm").addEventListener("submit", async function(e){
@@ -997,21 +1043,14 @@
       }
 
       try {
-        await generatePDF(false);
-        await sendEmailWithEmailJS(data);
+        const pdfPayload = await getPDFPayload();
+        await sendToN8N(data, pdfPayload);
 
-        alertBox.innerHTML = `<div class="success">Checklist enviado correctamente y PDF generado.</div>`;
-        this.reset();
-        setCurrentDateTime();
-        document.querySelector('input[name="clasificacionTrabajo"][value="Trabajo no crítico"]').checked = true;
-        criticalReasonsBlock.classList.add("hidden");
-        criticalSectionWrapper.classList.add("hidden");
-        document.getElementById("emailDestino").value = "kevin.gancino@cm93.com";
-        document.getElementById("decisionSuggestion").textContent = "Sugerencia automática: pendiente de evaluación.";
-        updateProgress();
+        alertBox.innerHTML = `<div class="success">Checklist enviado correctamente a n8n con el PDF adjunto en base64.</div>`;
+        resetFormAfterSubmit(this);
       } catch (error) {
         console.error(error);
-        alertBox.innerHTML = `<div class="danger">No se ha podido enviar el email. Revisa la configuración de EmailJS.</div>`;
+        alertBox.innerHTML = `<div class="danger">No se ha podido enviar el checklist a n8n. Revisa el webhook y vuelve a intentarlo.</div>`;
       }
     });
   </script>
