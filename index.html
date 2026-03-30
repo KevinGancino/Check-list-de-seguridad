@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ITT1878 · Check-list de seguridad en campo</title>
 
-  <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
@@ -331,11 +330,7 @@
     <div class="card">
       <div class="hero">
         <div class="logo-box">
-          <img
-            id="companyLogo"
-            alt="Logo ITT1878"
-            src="./logo-itt-1878.png"
-          >
+          <img id="companyLogo" alt="Logo ITT1878" src="./logo-itt-1878.png">
         </div>
 
         <div style="flex:1;min-width:260px;">
@@ -484,11 +479,10 @@
       <div class="card">
         <div class="actions">
           <button type="button" class="btn-secondary" onclick="generatePDF()">Generar PDF</button>
-          <button type="button" class="btn-secondary" onclick="window.print()">Imprimir</button>
           <button type="submit" class="btn-primary">Guardar y enviar</button>
         </div>
         <div class="helper" style="margin-top:12px;">
-          Esta versión envía el checklist y el PDF a n8n.
+          Al guardar y enviar se genera automáticamente una copia PDF con las respuestas y se envía a n8n para su posterior tratamiento.
         </div>
       </div>
     </form>
@@ -500,7 +494,7 @@
 
   <script>
     const COMPANY_NAME = "ITT1878";
-    const N8N_WEBHOOK_URL = "https://keviingc.app.n8n.cloud/webhook-test/encuesta-seguridad";
+    const N8N_WEBHOOK_URL = "https://keviingc.app.n8n.cloud/webhook/encuesta-seguridad";
 
     const sections = [
       {
@@ -1046,7 +1040,7 @@
         const pdfPayload = await getPDFPayload();
         await sendToN8N(data, pdfPayload);
 
-        alertBox.innerHTML = `<div class="success">Checklist enviado correctamente a n8n con el PDF adjunto en base64.</div>`;
+        alertBox.innerHTML = `<div class="success">Checklist enviado correctamente. Se ha generado y enviado una copia PDF con las respuestas.</div>`;
         resetFormAfterSubmit(this);
       } catch (error) {
         console.error(error);
